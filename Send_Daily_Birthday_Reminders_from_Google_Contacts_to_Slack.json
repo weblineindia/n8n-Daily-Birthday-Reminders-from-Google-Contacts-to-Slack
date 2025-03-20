@@ -1,0 +1,229 @@
+{
+  "name": "Send Daily Birthday Reminders from Google Contacts to Slack",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        140
+      ],
+      "id": "e4de5385-6b00-4245-b06e-3003703a348a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "fields": [
+          "emailAddresses",
+          "birthdays",
+          "names",
+          "nicknames"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleContacts",
+      "typeVersion": 1,
+      "position": [
+        300,
+        140
+      ],
+      "id": "df65de90-d931-450e-bed1-bf8b4f79a090",
+      "name": "Google Contacts",
+      "notesInFlow": true,
+      "notes": "Get the contact details\n"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "eff6fe23-651d-474d-8d77-3734e1ac4c13",
+              "leftValue": "={{ $json.today }}",
+              "rightValue": "={{ $('Google Contacts').item.json.birthdays }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        180
+      ],
+      "id": "6e3dfeea-b22d-4156-a9a9-a8d5bb610848",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C088HAK6E81",
+          "mode": "list",
+          "cachedResultName": "all-wli"
+        },
+        "messageType": "block",
+        "blocksUi": "=Today is {{$json[\"first_name\"]}} {{$json[\"last_name\"]}}'s birthday! 🎉",
+        "text": "Todays Birthday of your friend",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1020,
+        60
+      ],
+      "id": "32bd420e-11ab-4e82-a732-ed155f36094b",
+      "name": "Slack",
+      "webhookId": "b5fda056-5b45-49ee-8e09-cd4bc7a2a881",
+      "notesInFlow": true,
+      "notes": "Reminds to the birthday message"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "edb146b2-f338-4563-a991-d38613d1d5aa",
+              "leftValue": "={{ $('Google Contacts').item.json.birthdays }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        140
+      ],
+      "id": "caa5a301-ff68-4d61-801f-ac8c95edded3",
+      "name": "Filter Contact "
+    },
+    {
+      "parameters": {
+        "content": "Send Daily Birthday Reminders from Google Contacts to Slack",
+        "height": 320,
+        "width": 1220
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4a156b56-ab25-4d29-aa1b-8cf00e4114c9",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "This workflow automates the process of retrieving your Google Contacts, filtering out the ones with birthdays on the current day, and sending a reminder to a designated Slack channel. By scheduling it to run daily at a specific time, the workflow ensures that you never miss a birthday reminder. Whether for team celebrations, personal reminders, or simply keeping track of important dates, this workflow can be easily customized to notify you or your team about upcoming birthdays directly in Slack.",
+        "height": 100,
+        "width": 1220
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        360
+      ],
+      "id": "b1b04e75-e674-4389-a5ad-ebdcdfedca78",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Contacts": {
+      "main": [
+        [
+          {
+            "node": "Filter Contact ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Contact ": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c4002003-e2df-42a7-8618-2aeaf1282c45",
+  "meta": {
+    "instanceId": "14e4c77104722ab186539dfea5182e419aecc83d85963fe13f6de862c875ebfa"
+  },
+  "id": "9w5vu5VmXxpdBLWi",
+  "tags": []
+}
